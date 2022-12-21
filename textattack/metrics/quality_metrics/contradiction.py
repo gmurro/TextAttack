@@ -1,25 +1,32 @@
 """
 
-BERTScoreMetric class:
+ContradictionMetric class:
 -------------------------------------------------------
-Class for calculating BERTScore on AttackResults
+Class for calculating the contradiction metric on AttackResults
 
 """
 
 from textattack.attack_results import FailedAttackResult, SkippedAttackResult
-from textattack.constraints.semantics import BERTScore
+from textattack.constraints.semantics.nli import Contradiction
 from textattack.metrics import Metric
 
 
-class BERTScoreMetric(Metric):
-    def __init__(self, **kwargs):
-        self.model = BERTScore(min_bert_score=0.5, model_name="microsoft/deberta-large-mnli",  num_layers=18)
+class ContradictionMetric(Metric):
+    def __init__(
+            self,
+            model_name="cross-encoder/nli-deberta-v3-base", 
+            by_sentence=False,
+            **kwargs
+            ):
+
+        self.model = Contradiction(model_name)
+        self.by_sentence = by_sentence
         self.original_candidates = []
         self.successful_candidates = []
         self.all_metrics = {}
 
     def calculate(self, results):
-        """Calculates average BERT score on all successfull attacks.
+        """Calculates rate of contraddictions on all successfull attacks.
 
         Args:
             results (``AttackResult`` objects):
@@ -44,7 +51,7 @@ class BERTScoreMetric(Metric):
             )
             >> attacker = textattack.Attacker(attack, dataset, attack_args)
             >> results = attacker.attack_dataset()
-            >> bertscorem = textattack.metrics.quality_metrics.BERTScoreMetric().calculate(results)
+            >> contradiction_rate = textattack.metrics.quality_metrics.ContradictionMetric().calculate(results)
         """
 
         self.results = results
@@ -55,19 +62,23 @@ class BERTScoreMetric(Metric):
             elif isinstance(result, SkippedAttackResult):
                 continue
             else:
-                self.original_candidates.append(result.original_result.attacked_text)
-                self.successful_candidates.append(result.perturbed_result.attacked_text)
+                self.original_candidates.append(
+                    result.original_result.attacked_text)
+                self.successful_candidates.append(
+                    result.perturbed_result.attacked_text)
 
-        sbert_scores = []
+        # count number of contradictions in successful candidates
+        contradiction_counter = 0
         for c in range(len(self.original_candidates)):
-            sbert_scores.append(
-                self.model._sim_score(
-                    self.original_candidates[c], self.successful_candidates[c]
-                )
-            )
+            
+            if self.model._is_contradiction(
+                self.original_candidates[c], self.successful_candidates[c], self.by_sentence
+            ):
+                contradiction_counter += 1
 
-        self.all_metrics["avg_attack_bert_score"] = round(
-            sum(sbert_scores) / len(sbert_scores), 2
-        )
+
+        self.all_metrics["attack_contradiction_rate"] = round(
+            contradiction_counter / len(self.original_candidates), 3
+        ) if len(self.original_candidates) > 0 else 0.0
 
         return self.all_metrics

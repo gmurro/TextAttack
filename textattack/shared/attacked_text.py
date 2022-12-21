@@ -74,9 +74,11 @@ class AttackedText:
         # A list of all indices in *this* text that have been modified.
         self.attack_attrs.setdefault("modified_indices", set())
 
+       # A list of the rank of all words in *this* text that have been modified.
+        self.attack_attrs.setdefault("transformations_rank", list())
+
     def __eq__(self, other: AttackedText) -> bool:
         """Compares two AttackedText instances.
-
         Note: Does not compute true equality across attack attributes.
         We found this caused large performance issues with caching,
         and it's actually much faster (cache-wise) to just compare
@@ -410,6 +412,7 @@ class AttackedText:
         new_attack_attrs["original_index_map"] = self.attack_attrs[
             "original_index_map"
         ].copy()
+        new_attack_attrs["transformations_rank"] = self.attack_attrs["transformations_rank"].copy()
         new_i = 0
         # Create the new attacked text by swapping out words from the original
         # text with a sequence of 0+ words in the new text.

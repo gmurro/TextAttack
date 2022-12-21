@@ -85,4 +85,4 @@ class BERTScore(Constraint):
             return False
 
     def extra_repr_keys(self):
-        return ["min_bert_score", "model", "score_type"] + super().extra_repr_keys()
+        return ["min_bert_score", "model_name", "num_layers", "score_type"] + super().extra_repr_keys()

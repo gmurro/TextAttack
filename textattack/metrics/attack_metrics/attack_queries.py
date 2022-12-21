@@ -36,6 +36,6 @@ class AttackQueries(Metric):
         return self.all_metrics
 
     def avg_num_queries(self):
-        avg_num_queries = self.num_queries.mean()
+        avg_num_queries = self.num_queries.mean() if len(self.num_queries) > 0 else 0.0
         avg_num_queries = round(avg_num_queries, 2)
         return avg_num_queries

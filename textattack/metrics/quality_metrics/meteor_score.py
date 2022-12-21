@@ -43,7 +43,7 @@ class MeteorMetric(Metric):
             )
             >> attacker = textattack.Attacker(attack, dataset, attack_args)
             >> results = attacker.attack_dataset()
-            >> sbertm = textattack.metrics.quality_metrics.MeteorMetric().calculate(results)
+            >> meteor = textattack.metrics.quality_metrics.MeteorMetric().calculate(results)
         """
 
         self.results = results

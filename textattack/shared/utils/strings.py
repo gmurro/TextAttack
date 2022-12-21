@@ -2,6 +2,10 @@ import re
 import string
 
 import flair
+import jieba
+import pycld2 as cld2
+
+from word2number import w2n
 
 from .importing import LazyLoader
 
@@ -343,3 +347,15 @@ def check_if_punctuations(word):
         if c not in string.punctuation:
             return False
     return True
+
+def check_if_number(word):
+    """
+    Check if a word is a number.
+    """
+    if any(i.isdigit() for i in word):
+        return True
+    try:
+        num = w2n.word_to_num(word)
+        return True
+    except ValueError:
+        return False
